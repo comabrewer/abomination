@@ -1,6 +1,9 @@
 """A dumpster fire of metaprogramming and other Python abuses."""
+import re
 import sys
 import subprocess
+from pathlib import Path
+from typing import Union
 
 
 def magic():
@@ -8,6 +11,7 @@ def magic():
     original_hook = sys.excepthook
 
     def excepthook(type, value, traceback):
+        print(type, value, traceback)
         if type is not ModuleNotFoundError:
             original_hook(type, value, traceback)
             return
@@ -23,3 +27,33 @@ def magic():
         sys.exit(result.returncode)
 
     sys.excepthook = excepthook
+
+
+def call_out(
+    file: Union[str, Path] = __file__,
+    code: str = "",
+    sadface: bool = True,
+):
+    """Call out bad coding practices.
+
+    As a bad meta-joke, the signature of this function is intentionally
+    written in the very code style it was meant to destroy.
+
+    More checks may be added in the future.
+
+    Args:
+        file: Path to source file. Defaults to this file.
+        code: String of Python code. If code is given, the file will be
+            ignored.
+        sadface: Whether to check for sadface line break style.
+
+    Raises:
+        SyntaxError if any style issue is encountered.
+
+    """
+    if not code:
+        code = Path(file).read_text()
+
+    if sadface and re.search(r"^\s*\):$", code, re.MULTILINE):
+        raise SyntaxError("It saddens me to see '):' in your code :(")
+
